@@ -74,6 +74,9 @@ def fig_convergence():
     ax.loglog(dts, errs, "o-", label="RK4 vs DOP853 (tol 1e-13)")
     ax.loglog(dts, errs[0] * (dts / dts[0]) ** 4, "k--", label="slope 4")
     ax.set(xlabel="dt [s]", ylabel="max state error at t=4 s", title="RK4 convergence"); ax.legend()
+    from matplotlib.ticker import FixedLocator, NullLocator, ScalarFormatter
+    ax.xaxis.set_major_locator(FixedLocator(dts)); ax.xaxis.set_minor_locator(NullLocator())
+    ax.xaxis.set_major_formatter(ScalarFormatter()); ax.set_xticklabels([f"{d:g}" for d in dts], rotation=45)
     fig.tight_layout(); fig.savefig(OUT / "phase1_convergence.png", dpi=130); plt.close(fig)
 
 

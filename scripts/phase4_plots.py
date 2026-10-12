@@ -69,22 +69,45 @@ def fig_step_compare():
 
 
 def fig_impulse():
+    """2 deg doublets (+2 deg for 0.25 s, then -2 deg for 0.25 s, starting at t = 1 s) on the NONLINEAR plant,
+    linear model dashed. Angles in deg, rates in deg/s."""
     t0 = trim.compute_trim(V); m = lin.linearize(t0)
-    fig, axs = plt.subplots(1, 2, figsize=(12, 4))
-    tt = np.linspace(0, 12, 1200)
-    A, B, n = m.longitudinal(False)
-    s = signal.StateSpace(A, B[:, [0]], np.eye(4), np.zeros((4, 1)))
-    _, y = signal.impulse(s, T=tt)
-    axs[0].plot(tt, y[:, 2], label="q [rad/s]"); axs[0].plot(tt, y[:, 3], label="theta [rad]")
-    axs[0].set(title="Elevator impulse (short period then phugoid)", xlabel="t [s]"); axs[0].legend()
-    A, B, n = m.lateral(False)
-    s = signal.StateSpace(A, B[:, [1]], np.eye(4), np.zeros((4, 1)))
-    tt = np.linspace(0, 12, 1200)
-    _, y = signal.impulse(s, T=tt)
-    axs[1].plot(tt, y[:, 2], label="r [rad/s]"); axs[1].plot(tt, y[:, 3], label="phi [rad]")
-    axs[1].set(title="Rudder impulse (Dutch roll; spiral grows slowly)", xlabel="t [s]"); axs[1].legend()
-    for a in axs:
-        a.grid(alpha=0.3)
+    amp, t_on, T = np.deg2rad(2.0), 1.0, 15.0
+
+    def doublet(channel):
+        k = lin.IN[channel]
+        def f(t):
+            d = m.u_trim.copy()
+            if t_on <= t < t_on + 0.25:
+                d[k] += amp
+            elif t_on + 0.25 <= t < t_on + 0.5:
+                d[k] -= amp
+            return d
+        return f
+
+    def angles(X):
+        u, v, w = X[:, 3], X[:, 4], X[:, 5]
+        return {"alpha": np.arctan2(w, u), "beta": np.arcsin(v / np.sqrt(u**2 + v**2 + w**2))}
+
+    fig, axs = plt.subplots(3, 2, figsize=(12, 8), sharex=True, gridspec_kw={"height_ratios": [2, 2, 1]})
+    for col, (ch, title, sig_a, sig_r) in enumerate(
+            (("de", "Elevator doublet 2° (short period; phugoid barely excited)", [("theta", 7), ("alpha", None)], [("q", 10)]),
+             ("dr", "Rudder doublet 2° (Dutch roll; spiral grows slowly)", [("phi", 6), ("beta", None)], [("r", 11), ("p", 9)]))):
+        f = doublet(ch)
+        t, Xn = rs.simulate_nonlinear(t0, T, 0.005, f)
+        Xl = rs.simulate_linear(m, t, f)
+        for row, sigs in enumerate((sig_a, sig_r)):
+            for name, idx in sigs:
+                for X, ls in ((Xn, "-"), (Xl, "--")):
+                    y = X[:, idx] - t0.x12[idx] if idx is not None else angles(X)[name] - angles(t0.x12[None, :])[name][0]
+                    axs[row, col].plot(t, np.rad2deg(y), ls, color=f"C{[n for n, _ in sigs].index(name)}",
+                                       label=f"{name}" if ls == "-" else None)
+            axs[row, col].grid(alpha=0.3); axs[row, col].legend(fontsize=8, loc="upper right")
+        axs[0, col].set(title=title, ylabel="perturbation [deg]")
+        axs[1, col].set(ylabel="rate perturbation [deg/s]")
+        d = np.array([f(tk)[lin.IN[ch]] - m.u_trim[lin.IN[ch]] for tk in t])
+        axs[2, col].plot(t, np.rad2deg(d), "k"); axs[2, col].set(ylabel="input [deg]", xlabel="t [s]"); axs[2, col].grid(alpha=0.3)
+    fig.suptitle("Small doublet responses about trim, Va = 25 m/s: nonlinear plant (solid) vs linear model (dashed)")
     fig.tight_layout(); fig.savefig(OUT / "phase4_impulse.png", dpi=130)
 
 

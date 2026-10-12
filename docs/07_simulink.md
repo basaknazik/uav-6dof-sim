@@ -38,8 +38,8 @@ switch it off with `normalize=False`).
 | linearisation A / B (central differences) | 1.8e-9 / 8.1e-11; eigenvalues 6.8e-10 |
 | autopilot gains designed in MATLAB vs Python | relative 4.4e-10 |
 | Simulink open loop (doublets, saturation, steady wind, Dryden gusts), 30 s | max abs state error **6.8e-13** |
-| Simulink closed loop, no wind, 170 s mission | **1.4e-12**; autopilot commands 8e-15; zone sequence identical |
-| Simulink closed loop, wind + gusts, 170 s mission | **1.4e-12**; commands 1.2e-14; zone sequence identical |
+| Simulink closed loop, no wind, 170 s mission | **2.7e-12**; autopilot commands 8e-15; zone sequence identical |
+| Simulink closed loop, wind + gusts, 170 s mission | **5.0e-12**; commands 1.2e-14; zone sequence identical |
 | versus Python *with* renormalisation | 2.1e-5 (no wind), 6.5e-4 (gusts), the effect of the one thing Simulink does not do |
 
 Errors at the 1e-12 level are floating-point round-off of the same algorithm: the two implementations are numerically the same model. The remaining difference

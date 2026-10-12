@@ -55,9 +55,19 @@ def plot_trajectory_3d(ax, X, n_aircraft=12, scale=30.0, z_exaggeration=8.0, lab
     ax.scatter(E[0], N[0], H[0], color="g", s=25)
     ax.scatter(E[-1], N[-1], H[-1], color="r", s=25)
     ax.set(xlabel="East [m]", ylabel="North [m]", zlabel="Altitude [m]")
+    _tidy_3d_axes(ax)
     span = max(np.ptp(E), np.ptp(N), 1.0)
     ax.set_box_aspect((max(np.ptp(E), 0.05 * span), max(np.ptp(N), 0.05 * span), z_exaggeration * (np.ptp(H) + 20)))
     return ax
+
+
+def _tidy_3d_axes(ax):
+    """Fewer ticks and extra label padding so axis labels do not collide with tick labels."""
+    from matplotlib.ticker import MaxNLocator
+    for axis, pad in ((ax.xaxis, 14), (ax.yaxis, 14), (ax.zaxis, 8)):
+        axis.set_major_locator(MaxNLocator(nbins=5))
+        axis.labelpad = pad
+    ax.tick_params(axis="both", labelsize=8, pad=1)
 
 
 def make_animation(X, t, path, fps=20, stride=10, scale=40.0, dpi=70):
@@ -78,7 +88,8 @@ def make_animation(X, t, path, fps=20, stride=10, scale=40.0, dpi=70):
     a2 = fig.add_subplot(1, 2, 2, projection="3d")
     E, N, H = X[:, 1], X[:, 0], -X[:, 2]
     a1.plot(E, N, H, color="lightgray", lw=0.8)
-    a1.set(xlabel="E [m]", ylabel="N [m]", zlabel="h [m]")
+    a1.set(xlabel="East [m]", ylabel="North [m]", zlabel="h [m]")
+    _tidy_3d_axes(a1)
     a1.set_xlim(E.min() - 100, E.max() + 100)
     a1.set_ylim(N.min() - 100, N.max() + 100)
     a1.set_zlim(H.min() - 20, H.max() + 20)

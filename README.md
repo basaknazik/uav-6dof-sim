@@ -43,7 +43,7 @@ Run the whole test-suite with `python -m pytest` (about 80 s); the MATLAB/Simuli
 | Autopilot, no wind | final errors < 0.3 m altitude, 0.3° course, 0.2 m/s airspeed |
 | Autopilot, 7 m/s wind + Dryden gusts | within 1.5 m, 1.5°, 1 m/s (3 s averages) |
 | Closed-loop validation | small steps on the nonlinear plant match the linear closed loop within about 2 % |
-| Simulink vs Python | 170 s closed-loop mission with wind and gusts agrees to **1.4e-12** (round-off); autopilot commands and mode switching identical |
+| Simulink vs Python | 170 s closed-loop mission with wind and gusts agrees to **5e-12** (round-off); autopilot commands and mode switching identical |
 
 <p>
 <img src="results/phase5_mission.png" width="100%">
@@ -115,7 +115,7 @@ Details and the test: [docs/05_autopilot.md](docs/05_autopilot.md), `test_yaw_da
 * Parameters come from the authors' *current* public repo, which may differ from the printed 2012 Appendix E; the book could not be checked.
 * **Actuator constants are project choices, not Aerosonde data**: servo time constant 0.05 s, throttle time constant 0.10 s, ±45° surface limit (marked `NOT FROM SOURCE` in the parameter file). No rate limits or backlash.
 * **Motor/propeller equations are my own derivation** (standard DC-motor + `T = ρn²D⁴C_T(J)` convention). The authors' repo supplies only the coefficients, so the equation form is validated by physical tests (torque balance, efficiency < 1, plausible cruise throttle), not against a published reference. Motor/rotor inertia is neglected.
-* **Idle-descent limitation**: the quadratic `C_T(J)`, `C_Q(J)` fits are extrapolated at low throttle in fast flight (J ≳ 1.2); e.g. δt = 0 at 25 m/s gives about −22 N thrust. Cruise/trim (δt ≈ 0.6–0.8) is inside the fit, but descents at idle (the autopilot's descend zone) should be read as qualitative.
+* **Idle-descent limitation**: the quadratic `C_T(J)`, `C_Q(J)` fits are extrapolated at low throttle in fast flight (J ≳ 1.2); e.g. δt = 0 at 25 m/s gives about −22 N thrust. Cruise/trim (δt ≈ 0.6–0.8) is inside the fit, but descents at idle should be read as qualitative. In the demonstration mission the throttle command saturates at idle (δt = 0) during the descent from 150 m to 120 m (the autopilot's descend zone), so that segment flies in the extrapolated region of the propeller model.
 * Dryden gust parameters (L = 200/200/50 m, σ = 1.06/1.06/0.7 m/s) are from the authors' `mavsim_simulink/parameters/wind_parameters.m`; the shaping filters are the standard Dryden form, verified by tests.
 * Motor/propeller *equations* are derived here (the repo only has the coefficients); `C_T(J)` is extrapolated at idle and in fast descents (large negative thrust).
 * Flat non-rotating Earth, constant air density, rigid constant-mass airframe, no ground contact, no sensor/estimator models (perfect state feedback).

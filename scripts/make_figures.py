@@ -32,7 +32,7 @@ def main():
     ax = fig.add_subplot(projection="3d")
     visualize.plot_trajectory_3d(ax, o["x"][::10], scale=60.0, n_aircraft=14, z_exaggeration=8.0)
     ax.set_title("Mission trajectory (vertical axis stretched 8x, airframe glyphs enlarged ~20x)")
-    fig.tight_layout(); fig.savefig(ROOT / "results" / "trajectory_3d.png", dpi=130); plt.close(fig)
+    fig.tight_layout(); fig.savefig(ROOT / "results" / "trajectory_3d.png", dpi=130, bbox_inches="tight"); plt.close(fig)
     n = visualize.make_animation(o["x"], o["t"], str(ROOT / "results" / "attitude_animation.gif"), stride=60, fps=20)
     print("animation frames:", n)
 
