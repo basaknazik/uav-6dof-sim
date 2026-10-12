@@ -174,3 +174,18 @@ With a saturated output the integrator keeps accumulating, then needs a long tim
 
 **Q8. How did you verify the autopilot is implemented as designed?**
 Small steps on the nonlinear plant must match the linear closed-loop prediction within about 2 %. This caught a start-up bug (a bumpless reset on the very first call cancelled the proportional kick of the first step).
+
+---
+
+## Phase 6 — Visualisation
+
+**Q1. How do you draw the aircraft attitude correctly from simulation states, and what bugs are typical?**
+Take body-frame points (x nose, y right, z down), rotate with `R_b→v = (R_v→b)ᵀ` (a passive/active-rotation mix-up is the classic bug, i.e. R instead of Rᵀ), then map NED to
+plot axes (East, North, Up = −Down). Test with known cases: yaw 90° must put the nose East, pitch up must lift the nose, roll right must drop the right wing.
+
+**Q2. Why did the first 3D plot look wrong even though the data were right?**
+Matplotlib stretches the three axes independently; with 3.5 km of ground track and 50 m of altitude change, the glyph's vertical extent looked like huge sticks. The fix is an explicit
+box aspect (vertical exaggeration) plus compensating the glyph's z extent by the same factor.
+
+**Q3. Why verify visualisation code with tests?**
+Frame/sign errors in plotting code silently hide dynamics bugs (the model may look right while mirrored). Cheap geometric tests tie the picture to the rotation-matrix definition.

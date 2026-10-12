@@ -18,3 +18,6 @@ codegen/
 Thumbs.db
 .vscode/
 .idea/
+
+# generated data (large)
+results/*.npz

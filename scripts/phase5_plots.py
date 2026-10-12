@@ -46,7 +46,6 @@ def main():
         a.plot(o["x"][:, 1], o["x"][:, 0], label=label)
     a.set(xlabel="East [m]", ylabel="North [m]", title="Ground track"); a.axis("equal"); a.grid(alpha=0.3); a.legend(fontsize=8)
     fig.tight_layout(); fig.savefig(ROOT / "results/phase5_track.png", dpi=120)
-    np.savez(ROOT / "results/phase5_mission_nowind.npz", t=c["t"], x=c["x"], cmd=c["cmd"])
 
 
 if __name__ == "__main__":
