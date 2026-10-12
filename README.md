@@ -4,8 +4,9 @@ A from-scratch nonlinear 6-DOF simulation of the Aerosonde small UAV, with trim,
 linearization/modal analysis, a successive-loop-closure autopilot, and a
 MATLAB/Simulink port validated against the Python reference implementation.
 
-Notation, frames and parameters follow Beard & McLain, *Small Unmanned Aircraft:
-Theory and Practice* (Princeton, 2012).
+Notation and frames follow Beard & McLain, *Small Unmanned Aircraft:
+Theory and Practice* (Princeton, 2012). Parameters are read from the authors' public
+companion repo (BYU MAGICC `mavsim_public`, commit and file cited in `params/aerosonde.py`).
 
 > Work in progress — built phase by phase. Each phase has a derivation note in
 > [`docs/`](docs/) and physics-based verification tests in [`tests/`](tests/).
@@ -15,7 +16,7 @@ Theory and Practice* (Princeton, 2012).
 | Phase | Topic | Status |
 |---|---|---|
 | 0 | Setup, tooling, test harness | done |
-| 1 | Rigid-body kinematics & dynamics (Euler + quaternion, RK4) | planned |
+| 1 | Rigid-body kinematics & dynamics (Euler + quaternion, RK4) | done |
 | 2 | Forces & moments: aero, propulsion, actuators, wind/Dryden | planned |
 | 3 | Trim (level, climb, coordinated turn) | planned |
 | 4 | Linearization & modal analysis | planned |
