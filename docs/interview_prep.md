@@ -86,3 +86,33 @@ Unit white noise through shaping filters: `H_u=σ√(2V/L)/(s+V/L)`, `H_{v,w}=σ
 Dryden spectra of MIL-F-8785C. Verified: output variance (Lyapunov equation) is exactly σ²; autocorrelation equals
 the closed forms `σ²e^{−ξ/L}` and `σ²(1−ξ/2L)e^{−ξ/L}`; the discrete implementation (Van Loan exact discretisation) is stationary
 for any Ts; long simulation reproduces variance and correlation. L and σ values are flagged unverified.
+
+---
+
+## Phase 3 — Trim
+
+**Q1. What is a trim condition mathematically, and how do you compute it?**
+A state/input pair with `φ̇=θ̇=0`, constant body velocity and rates (steady helix). We choose `(V_a, γ, R, β)`, express
+`u,v,w` and `p,q,r` through them and solve `u̇=v̇=ẇ=ṗ=q̇=ṙ=0`, `ḣ=V_a sinγ` for `[α,θ,φ,δa,δe,δr,δt]` with a bounded
+nonlinear least-squares solver on the *full nonlinear* model. Residual reaches ~1e-15.
+
+**Q2. Why fix β? What goes wrong if you let it float?**
+Steady sideslip with bank is another equilibrium family; the system has one more unknown than equations and the solver
+returns an arbitrary member. β=0 (coordinated flight) picks the sensible one; a specific β gives steady-heading-sideslip trims.
+
+**Q3. Why does straight-and-level trim need nonzero aileron/rudder and a small bank angle?**
+The propeller reaction torque is a constant roll moment; aileron cancels it and the resulting small side force is balanced by a small bank
+(with β forced to 0). Without the prop torque the lateral trim would be exactly zero by mirror symmetry.
+
+**Q4. How do you know your trim is correct beyond "the residual is small"?**
+(1) Re-evaluate with an independent Euler-angle model (accelerations zero, ψ̇, ḣ, ground speed). (2) Simulate 10 s from trim: the states
+stay within 1e-8 and the ground track is the right circle. (3) Check analytic relations: `θ=α+γ`, `tanφ≈Vψ̇/g`, trends (slow ⇒ high α and more
+up-elevator). (4) Infeasible requests fail loudly.
+
+**Q5. Why does the elevator trim become more nose-up (negative) at low speed?**
+Lift must equal weight, so lower q̄ requires higher C_L ⇒ higher α. `C_mα<0` generates a nose-down moment ∝ α that the elevator
+(`C_mδe<0`, so negative deflection = nose-up) must cancel.
+
+**Q6. What limits the maximum level speed in the model?**
+Throttle saturates at δt=1 near 33 m/s: thrust (from the motor/prop fit) can no longer balance drag; trim becomes infeasible (the solver
+reports non-convergence rather than returning a wrong answer).

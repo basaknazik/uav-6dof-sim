@@ -18,7 +18,7 @@ companion repo (BYU MAGICC `mavsim_public`, commit and file cited in `params/aer
 | 0 | Setup, tooling, test harness | done |
 | 1 | Rigid-body kinematics & dynamics (Euler + quaternion, RK4) | done |
 | 2 | Forces & moments: aero, propulsion, actuators, wind/Dryden | done |
-| 3 | Trim (level, climb, coordinated turn) | planned |
+| 3 | Trim (level, climb, coordinated turn) | done |
 | 4 | Linearization & modal analysis | planned |
 | 5 | Autopilot (successive loop closure) | planned |
 | 6 | Visualization & polish | planned |
