@@ -93,8 +93,7 @@ C_Q2, C_Q1, C_Q0 = -0.01664, 0.004970, 0.005230   # prop torque-coefficient fit 
 C_T2, C_T1, C_T0 = -0.1079, -0.06044, 0.09357      # prop thrust-coefficient fit C_T(J)
 
 # ---------------------------------------------------------------------------
-# NOT FROM SOURCE (project choices / unverified) -- the upstream repo is a
-# student skeleton and does not contain these. Review before trusting results.
+# NOT FROM SOURCE (project choices) -- the upstream repo does not contain these.
 # ---------------------------------------------------------------------------
 # Actuators (Phase 2 requirement: saturation + first-order dynamics).
 # Time constants are generic small-UAV servo/ESC values chosen by the project, NOT Aerosonde data.
@@ -103,8 +102,10 @@ tau_throttle = 0.10                  # s   throttle (ESC/motor command) first-or
 delta_surface_max = 0.7853981633974483   # rad  +-45 deg surface deflection limit (project choice)
 delta_t_min, delta_t_max = 0.0, 1.0      # -    throttle limits
 
-# Dryden gust model. UNVERIFIED: typed from memory of Beard & McLain Table 4.1
-# (low altitude, light turbulence). Could not be fetched (book PDF not accessible).
-# Verify against the book or MIL-F-8785C / MIL-HDBK-1797 before quoting gust results.
+# Dryden gust model parameters: SOURCE = authors' repo, same commit as above,
+#   mavsim_simulink/parameters/wind_parameters.m  (WIND.L_u/L_v/L_w = 200/200/50, WIND.sigma_u/v/w = 1.06/1.06/0.7,
+#   WIND.Va0 = 25). (The Python/MATLAB wind_simulation files in that repo are student skeletons without values.)
+# The shaping-filter transfer functions themselves are not in the repo; they are implemented from the standard Dryden
+# form and verified against its closed-form variance and autocorrelation in tests/test_wind_dryden.py.
 dryden_Lu, dryden_Lv, dryden_Lw = 200.0, 200.0, 50.0       # m   turbulence scale lengths
 dryden_sigma_u, dryden_sigma_v, dryden_sigma_w = 1.06, 1.06, 0.7   # m/s  turbulence intensities

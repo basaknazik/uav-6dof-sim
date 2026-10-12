@@ -104,7 +104,7 @@ Normalisation check (numerically in tests, via a Lyapunov equation): output vari
 white noise. The autocorrelation must match Dryden's closed forms (ξ = Va0 τ):
 `R_u = σ² e^{−ξ/L}`, `R_v = σ² (1 − ξ/2L) e^{−ξ/L}`.
 Discretisation: exact (Van Loan), so statistics don't depend on the sample time.
-Values of L, σ are **unverified** (section 9).
+Values of L, σ: `mavsim_simulink/parameters/wind_parameters.m` of the authors' repo (commit 10363e0, see `params/aerosonde.py`).
 
 ## 8. Verification plan (tests/test_forces.py, test_propulsion.py, test_wind.py, test_actuators.py)
 | Test | Checks |
@@ -122,8 +122,9 @@ Values of L, σ are **unverified** (section 9).
 | Plant | straight level steady flight needs no NaNs; thrust/drag numbers; Aircraft RK4 vs scipy |
 
 ## 9. Items not taken from the authors' parameter file (need your decision/verification)
-1. **Dryden L, σ** (200/200/50 m; 1.06/1.06/0.7 m/s): from my memory of the book's low-altitude, light-turbulence
-   table; the book/PDF was not accessible. Flagged `UNVERIFIED` in `params/aerosonde.py`.
+1. **Dryden L, σ** (200/200/50 m; 1.06/1.06/0.7 m/s) were first typed from memory and then **confirmed against the authors' repo**
+   (`mavsim_simulink/parameters/wind_parameters.m`, commit 10363e0, which also gives Va0 = 25 m/s); identical, so no results changed.
+   The shaping-filter transfer functions are not in the repo: they follow the standard Dryden form and are verified by tests.
 2. **Actuator time constants and limits**: project choices, not Aerosonde data.
 3. **Motor/prop equations** (section 5): derived here; coefficient fit validity assumes the standard
    `T = ρn²D⁴C_T(J)` convention.

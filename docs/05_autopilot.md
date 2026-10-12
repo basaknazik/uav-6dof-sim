@@ -54,5 +54,5 @@ Design-model coefficients are *read off the numerically linearised plant* (Phase
 Figures: `results/phase5_mission.png`, `results/phase5_track.png`.
 
 ## Limitations
-Perfect state feedback; gains designed at one trim (stable 18–30 m/s but performance not scheduled); Dryden L, σ are unverified (Phase 2);
+Perfect state feedback; gains designed at one trim (stable 18–30 m/s but performance not scheduled); 
 idle-throttle descents use the extrapolated propeller fit; windy runs start with the trim ground velocity, so a start-up airspeed transient appears in the wind plot.

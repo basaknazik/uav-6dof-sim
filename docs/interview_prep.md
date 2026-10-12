@@ -85,7 +85,7 @@ Clipping the output after the integrator allows integrator wind-up of the actuat
 Unit white noise through shaping filters: `H_u=σ√(2V/L)/(s+V/L)`, `H_{v,w}=σ√(3V/L)(s+V/(√3L))/(s+V/L)²`, giving the
 Dryden spectra of MIL-F-8785C. Verified: output variance (Lyapunov equation) is exactly σ²; autocorrelation equals
 the closed forms `σ²e^{−ξ/L}` and `σ²(1−ξ/2L)e^{−ξ/L}`; the discrete implementation (Van Loan exact discretisation) is stationary
-for any Ts; long simulation reproduces variance and correlation. L and σ values are flagged unverified.
+for any Ts; long simulation reproduces variance and correlation. L and σ come from the authors' `wind_parameters.m`.
 
 ---
 

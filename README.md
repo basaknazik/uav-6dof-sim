@@ -54,8 +54,17 @@ The plant (actuators, air data, aerodynamics, propulsion, gravity, rigid-body 6-
 only core MATLAB and basic blocks (no Aerospace Blockset or Control System Toolbox), and validated against this Python implementation with identical inputs: see
 [docs/07_simulink.md](docs/07_simulink.md) (also: how the setup extends to SIL/HIL).
 
-<img src="results/simulink_closed_loop.png" width="48%"> <img src="results/simulink_plant.png" width="48%">
-<img src="results/phase7_validation.png" width="100%">
+**Top-level model** (`uav_closed_loop.slx`: mission commands, 100 Hz autopilot MATLAB Function block, ZOH sampling, UAV Plant, gust and wind inputs, logging):
+
+![Simulink top-level model](results/simulink_closed_loop.png)
+
+**Plant subsystem** (actuators, air data, aerodynamics, propulsion, gravity, rigid-body 6-DOF, state integrator):
+
+![Simulink plant subsystem](results/simulink_plant.png)
+
+**Validation against Python** (altitude overlays and the absolute error of all 17 states, about 1e-12):
+
+![Simulink vs Python validation](results/phase7_validation.png)
 
 More figures: `results/phase1_*.png` (conservation laws, RK4 order, gimbal lock), `phase2_models.png` (lift/stall, propeller, gusts),
 `phase3_trim_map.png`, `phase4_step_compare.png` (linear vs nonlinear), `phase4_modes.md` (mode table at 18/25/30 m/s).
@@ -75,6 +84,20 @@ More figures: `results/phase1_*.png` (conservation laws, RK4 order, gimbal lock)
 * **Autopilot**: roll PD ← course PI; pitch PD ← altitude PI; airspeed PI via throttle (hold zone) or pitch (climb/descend zones); washed-out yaw damper.
   Gains are computed from the linearised model, see [docs/05_autopilot.md](docs/05_autopilot.md).
 
+## Deliberate deviation from the book: yaw damper instead of sideslip hold
+
+Beard & McLain close the rudder loop with a PI sideslip-hold. On this airframe that loop **reduced Dutch-roll damping** in the full linear closed-loop analysis for every gain tried
+(with the course/roll loops closed and the sideslip PI added, the minimum closed-loop damping fell, and the single-DOF design formula with ωn = 1 rad/s was unstable through the rudder actuator lag).
+A washed-out yaw-rate feedback (`δr = k_r · r_washout`, τ_wash = 1 s, k_r chosen from the (v, r) sub-model for ζ_DR = 0.7) was used instead:
+
+| closed-loop minimum damping ratio (all modes) | value |
+|---|---|
+| open-loop Dutch roll | 0.24 |
+| autopilot **without** yaw damper (roll/course/pitch/altitude/speed loops only) | 0.17 |
+| autopilot **with** yaw damper | **0.41** |
+
+Details and the test: [docs/05_autopilot.md](docs/05_autopilot.md), `test_yaw_damper_improves_dutch_roll_damping`.
+
 ## Design choices worth knowing
 
 * **Reference implementation in Python**, tested with `pytest`; fixed-step RK4 (deterministic, as required for SIL/HIL), `solve_ivp` only as a reference in tests.
@@ -88,7 +111,10 @@ More figures: `results/phase1_*.png` (conservation laws, RK4 order, gimbal lock)
 ## Limitations
 
 * Parameters come from the authors' *current* public repo, which may differ from the printed 2012 Appendix E; the book could not be checked.
-* **Dryden turbulence lengths/intensities, actuator time constants and limits are project choices** (marked `NOT FROM SOURCE` in the parameter file).
+* **Actuator constants are project choices, not Aerosonde data**: servo time constant 0.05 s, throttle time constant 0.10 s, ±45° surface limit (marked `NOT FROM SOURCE` in the parameter file). No rate limits or backlash.
+* **Motor/propeller equations are my own derivation** (standard DC-motor + `T = ρn²D⁴C_T(J)` convention). The authors' repo supplies only the coefficients, so the equation form is validated by physical tests (torque balance, efficiency < 1, plausible cruise throttle), not against a published reference. Motor/rotor inertia is neglected.
+* **Idle-descent limitation**: the quadratic `C_T(J)`, `C_Q(J)` fits are extrapolated at low throttle in fast flight (J ≳ 1.2); e.g. δt = 0 at 25 m/s gives about −22 N thrust. Cruise/trim (δt ≈ 0.6–0.8) is inside the fit, but descents at idle (the autopilot's descend zone) should be read as qualitative.
+* Dryden gust parameters (L = 200/200/50 m, σ = 1.06/1.06/0.7 m/s) are from the authors' `mavsim_simulink/parameters/wind_parameters.m`; the shaping filters are the standard Dryden form, verified by tests.
 * Motor/propeller *equations* are derived here (the repo only has the coefficients); `C_T(J)` is extrapolated at idle and in fast descents (large negative thrust).
 * Flat non-rotating Earth, constant air density, rigid constant-mass airframe, no ground contact, no sensor/estimator models (perfect state feedback).
 * Gains are designed at one trim (25 m/s); the loop stays stable from 18 to 30 m/s but is not gain-scheduled.
