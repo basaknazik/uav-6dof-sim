@@ -116,3 +116,33 @@ Lift must equal weight, so lower q̄ requires higher C_L ⇒ higher α. `C_mα<0
 **Q6. What limits the maximum level speed in the model?**
 Throttle saturates at δt=1 near 33 m/s: thrust (from the motor/prop fit) can no longer balance drag; trim becomes infeasible (the solver
 reports non-convergence rather than returning a wrong answer).
+
+---
+
+## Phase 4 — Linearisation & modal analysis
+
+**Q1. How do you linearise a nonlinear 6-DOF model and what does the result mean?**
+Pick a trim `(x*,u*)` with `f(x*,u*)=0`, take the Jacobians `A=∂f/∂x`, `B=∂f/∂u` (central differences here, `h=1e-6`),
+giving `δẋ=Aδx+Bδu`. It is a first-order Taylor model valid for small deviations; the remainder is O(‖δ‖²). We show this
+by test: halving the input amplitude shrinks the relative error ≥1.7×, and a wrong A leaves an amplitude-independent floor.
+
+**Q2. Why can longitudinal and lateral dynamics be separated at level trim? When does the separation fail?**
+By xz-symmetry and `φ0=β0=0, p=q=r=0` the coupling Jacobian blocks vanish; here they equal `g sinφ0` (φ0≈−0.03° from prop torque).
+In turns, with bank, rates and sideslip, the blocks are O(1) and one must use the full 8-state model.
+
+**Q3. Name the five modes, their physical origin, and typical time scales.**
+Short period (pitch/α oscillation, 0.64 s, ζ 0.44, from static stability and pitch damping), phugoid (energy exchange
+between speed and height, 13 s, lightly damped), roll subsidence (roll damping `C_ℓp`, τ=45 ms), Dutch roll (yaw/roll/sideslip coupling,
+ζ 0.24), spiral (slow bank/yaw divergence from weak directional vs. dihedral balance; here unstable, 7.8 s to double).
+
+**Q4. How do you verify the numbers without a reference? Give two approximations.**
+2-DOF short period: `s²−(Zα+Mq)s+(ZαMq−Mα)=0` → 11.1 rad/s vs. 11.0. Roll: `L_p=q̄Sb(b/2V)(Γ3C_ℓp+Γ4C_np)` → −22.6 vs. −22.4.
+Phugoid Lanchester `ωn=√2 g/V` → 0.555 vs. 0.499 (11 % off; it ignores thrust/prop effects; its damping prediction is wrong).
+
+**Q5. What does the unstable spiral mean for the autopilot, and why didn't the trim simulation diverge?**
+A real pole at +0.089 s⁻¹ means perturbations grow as e^{0.089t}; slow enough that a roll-attitude loop easily stabilises it.
+The trim simulation starts 1e-16 away from equilibrium so after 20 s the error is ~6e-16 — still invisible.
+
+**Q6. How do the modes move with airspeed and why?**
+Aerodynamic stiffness and damping scale with q̄∝V² and the nondimensional rates with 1/V; short period and roll mode rates therefore ∝V
+(measured ratio 1.66 for V 18→30), whereas the phugoid frequency falls (~1/V in Lanchester).
