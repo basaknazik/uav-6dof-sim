@@ -1,5 +1,7 @@
 # 6-DOF Fixed-Wing UAV Simulation & Autopilot
 
+[![tests](https://github.com/basaknazik/uav-6dof-sim/actions/workflows/tests.yml/badge.svg)](https://github.com/basaknazik/uav-6dof-sim/actions/workflows/tests.yml)
+
 A from-scratch nonlinear **6-DOF simulation of the Aerosonde small UAV**, with trim, linearisation and modal
 analysis, a successive-loop-closure autopilot tested in wind and turbulence, 3D visualisation, and a MATLAB/Simulink
 port validated against the Python reference. Every phase has a derivation note in [`docs/`](docs/) and physics-based tests
@@ -159,6 +161,10 @@ gains, _ = ap.design_gains(model)                            # autopilot gains f
 cmds = [(0, 25.0, 100.0, 0.0), (5, 25.0, 150.0, np.deg2rad(90))]   # (t, Va_c, h_c, chi_c)
 out = mission.simulate_mission(t0, gains, cmds, T=60.0, wind_ned=(-4, 6, 0), gusts=True)
 ```
+
+## License and attribution
+
+Code: MIT (see [LICENSE](LICENSE)). Numeric Aerosonde parameters and Dryden values were read from the authors' public repository (BYU MAGICC `mavsim_public`, GPL-3.0; commit and files cited in `params/aerosonde.py`); no code from that repository is included.
 
 ## References
 
