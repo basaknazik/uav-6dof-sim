@@ -20,7 +20,7 @@ companion repo (BYU MAGICC `mavsim_public`, commit and file cited in `params/aer
 | 2 | Forces & moments: aero, propulsion, actuators, wind/Dryden | done |
 | 3 | Trim (level, climb, coordinated turn) | done |
 | 4 | Linearization & modal analysis | done |
-| 5 | Autopilot (successive loop closure) | planned |
+| 5 | Autopilot (successive loop closure) | done |
 | 6 | Visualization & polish | planned |
 | 7 | MATLAB/Simulink port + cross-validation | planned |
 

@@ -146,3 +146,31 @@ The trim simulation starts 1e-16 away from equilibrium so after 20 s the error i
 **Q6. How do the modes move with airspeed and why?**
 Aerodynamic stiffness and damping scale with q̄∝V² and the nondimensional rates with 1/V; short period and roll mode rates therefore ∝V
 (measured ratio 1.66 for V 18→30), whereas the phugoid frequency falls (~1/V in Lanchester).
+
+---
+
+## Phase 5 — Autopilot
+
+**Q1. Explain successive loop closure and why bandwidth separation matters.**
+Inner loops (roll, pitch) are fast and treated as roughly unity gain by the outer loop (course, altitude). The outer loop is designed on a model where the inner loop is replaced by its DC gain, which is only valid if the outer bandwidth is 5-10 times lower (`W = ωn_inner/ωn_outer`). We verify the assumption by analysing the full linear closed loop including actuators.
+
+**Q2. How are the gains designed from the linear model, without Control System Toolbox?**
+Read `a_φ1, a_φ2, a_θ1..3, a_V1..3` off the numerical Jacobians (A, B) of Phase 4, write the closed-loop characteristic polynomial of the second-order design model (`s² + (a1 + a2kd)s + a2kp`) and match it to `s² + 2ζωn s + ωn²`. Only arithmetic, so it ports 1:1 to MATLAB.
+
+**Q3. Why is the pitch gain negative here?**
+`a_θ3 = q̄Sc C_mδe/J_y < 0`: positive elevator is nose-down. The gain sign must follow the plant gain sign or the loop has positive feedback. Same for the airspeed-by-pitch gains (pitch DOWN to speed up).
+
+**Q4. Why track ground course instead of heading, and what did the crosswind test show?**
+The path over the ground is what matters. With wind the airframe must crab: `0 = Va sinψ + w_E` for χ = 0 gives ψ = −asin(8/25) = −18.7°. The sim reproduces it within 0.3°, while a heading controller would drift sideways.
+
+**Q5. Why was the book's sideslip-hold PI replaced?**
+In the linear closed-loop eigenvalue analysis it lowered Dutch-roll damping for every gain tried, and the single-DOF design formula ignores the yaw coupling and the rudder actuator lag. A washed-out yaw-rate feedback raised the minimum closed-loop damping from 0.17 to 0.41. Lesson: validate reduced-order designs on the full model.
+
+**Q6. What do climb/hold/descend zones do and how do you avoid chatter and bumps?**
+Large altitude errors saturate the pitch command, so in the climb/descend zones the throttle is pinned (max/min) and the elevator regulates airspeed; near the target we switch to altitude-by-pitch, speed-by-throttle. Hysteresis (exit at 80 % of the zone) prevents chatter; integrators of the newly active loops are re-initialised so the command is continuous (bumpless).
+
+**Q7. What is integrator windup and how is it handled?**
+With a saturated output the integrator keeps accumulating, then needs a long time to unwind and overshoots. Conditional integration only integrates when it does not push further into saturation. Test: after 10 s of a railed output it leaves saturation in under 1.5 s, versus over 40 s for a naive integrator.
+
+**Q8. How did you verify the autopilot is implemented as designed?**
+Small steps on the nonlinear plant must match the linear closed-loop prediction within about 2 %. This caught a start-up bug (a bumpless reset on the very first call cancelled the proportional kick of the first step).
