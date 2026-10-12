@@ -21,3 +21,8 @@ Thumbs.db
 
 # generated data (large)
 results/*.npz
+
+# generated Simulink models / reference data (rebuild with matlab/build_uav_models.m, scripts/make_matlab_reference.py)
+*.slx
+matlab/validation/data/
+matlab/slprj/

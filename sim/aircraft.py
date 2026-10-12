@@ -46,10 +46,13 @@ class Aircraft:
         return np.concatenate([plant_deriv(x[:N_X], x[N_X:], wind_ned, gust_b),
                                actuators.actuator_rate(x[N_X:], delta_cmd)])
 
-    def step(self, dt, delta_cmd, wind_ned=(0, 0, 0), gust_b=(0, 0, 0)):
+    def step(self, dt, delta_cmd, wind_ned=(0, 0, 0), gust_b=(0, 0, 0), normalize=True):
+        """One RK4 step. normalize=False skips the quaternion renormalisation (used to compare with the
+        Simulink model, which integrates the quaternion without renormalising)."""
         d = lambda t, x: self.deriv(x, delta_cmd, wind_ned, gust_b)  # noqa: E731
         self.x = rk4_step(d, self.t, self.x, dt)
-        self.x[6:10] = rot.quat_normalize(self.x[6:10])
+        if normalize:
+            self.x[6:10] = rot.quat_normalize(self.x[6:10])
         self.t += dt
         return self.x
 

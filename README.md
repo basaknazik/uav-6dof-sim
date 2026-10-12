@@ -1,7 +1,7 @@
 # 6-DOF Fixed-Wing UAV Simulation & Autopilot
 
 A from-scratch nonlinear **6-DOF simulation of the Aerosonde small UAV**, with trim, linearisation and modal
-analysis, a successive-loop-closure autopilot tested in wind and turbulence, 3D visualisation, and (Phase 7) a MATLAB/Simulink
+analysis, a successive-loop-closure autopilot tested in wind and turbulence, 3D visualisation, and a MATLAB/Simulink
 port validated against the Python reference. Every phase has a derivation note in [`docs/`](docs/) and physics-based tests
 (conservation laws, analytic solutions, symmetry, linear-vs-nonlinear consistency) in [`tests/`](tests/).
 
@@ -24,9 +24,9 @@ authors' public companion repo (BYU MAGICC `mavsim_public`, commit and file cite
 | 4 | Linearization & modal analysis | done |
 | 5 | Autopilot (successive loop closure) | done |
 | 6 | Visualization & polish | done |
-| 7 | MATLAB/Simulink port + cross-validation | planned |
+| 7 | MATLAB/Simulink port + cross-validation | done |
 
-Run the whole test-suite with `python -m pytest` (about 80 s). Study material: [`docs/interview_prep.md`](docs/interview_prep.md).
+Run the whole test-suite with `python -m pytest` (about 80 s); the MATLAB/Simulink validation is opt-in (`RUN_MATLAB_TESTS=1`, a few minutes). Study material: [`docs/interview_prep.md`](docs/interview_prep.md).
 
 ## Results at a glance
 
@@ -41,11 +41,21 @@ Run the whole test-suite with `python -m pytest` (about 80 s). Study material: [
 | Autopilot, no wind | final errors < 0.3 m altitude, 0.3° course, 0.2 m/s airspeed |
 | Autopilot, 7 m/s wind + Dryden gusts | within 1.5 m, 1.5°, 1 m/s (3 s averages) |
 | Closed-loop validation | small steps on the nonlinear plant match the linear closed loop within about 2 % |
+| Simulink vs Python | 170 s closed-loop mission with wind and gusts agrees to **1.4e-12** (round-off); autopilot commands and mode switching identical |
 
 <p>
 <img src="results/phase5_mission.png" width="100%">
 <img src="results/trajectory_3d.png" width="48%"> <img src="results/phase4_poles.png" width="48%">
 </p>
+
+## MATLAB/Simulink port
+
+The plant (actuators, air data, aerodynamics, propulsion, gravity, rigid-body 6-DOF) and the autopilot are rebuilt in Simulink **from a script** (`matlab/build_uav_models.m`), using
+only core MATLAB and basic blocks (no Aerospace Blockset or Control System Toolbox), and validated against this Python implementation with identical inputs: see
+[docs/07_simulink.md](docs/07_simulink.md) (also: how the setup extends to SIL/HIL).
+
+<img src="results/simulink_closed_loop.png" width="48%"> <img src="results/simulink_plant.png" width="48%">
+<img src="results/phase7_validation.png" width="100%">
 
 More figures: `results/phase1_*.png` (conservation laws, RK4 order, gimbal lock), `phase2_models.png` (lift/stall, propeller, gusts),
 `phase3_trim_map.png`, `phase4_step_compare.png` (linear vs nonlinear), `phase4_modes.md` (mode table at 18/25/30 m/s).
@@ -87,13 +97,13 @@ More figures: `results/phase1_*.png` (conservation laws, RK4 order, gimbal lock)
 ## Repository layout
 
 ```
-docs/      derivation note per phase (00_setup ... 05_autopilot) + interview_prep.md
+docs/      derivation note per phase (00_setup ... 07_simulink) + interview_prep.md
 params/    aerosonde.py: every parameter with its source / flag
 sim/       rotations, dynamics, integrators, aero, propulsion, actuators, wind, aircraft, trim,
            linearize, response, autopilot, mission, visualize
 tests/     physics verification tests (pytest)
 scripts/   figure generation (make_figures.py), upstream parameter check
-matlab/    Simulink port (Phase 7)
+matlab/    MATLAB/Simulink port: uav_*.m model + autopilot, build_uav_models.m (builds the .slx from a script), validation/
 results/   generated figures and animation
 ```
 
@@ -103,7 +113,11 @@ results/   generated figures and animation
 python -m venv .venv
 .venv/Scripts/python -m pip install -r requirements.txt      # Windows (use .venv/bin/python on Linux/macOS)
 .venv/Scripts/python -m pytest                                # all tests
+
 .venv/Scripts/python scripts/make_figures.py                  # regenerate every figure + the animation (about 3 min)
+# MATLAB/Simulink cross-validation (needs MATLAB + Simulink):
+.venv/Scripts/python scripts/make_matlab_reference.py          # Python reference data (about 2 min)
+matlab -batch "addpath('matlab/validation'); run_validation"   # build the models, simulate, compare
 ```
 
 Minimal example:

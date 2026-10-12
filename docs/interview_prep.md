@@ -189,3 +189,32 @@ box aspect (vertical exaggeration) plus compensating the glyph's z extent by the
 
 **Q3. Why verify visualisation code with tests?**
 Frame/sign errors in plotting code silently hide dynamics bugs (the model may look right while mirrored). Cheap geometric tests tie the picture to the rotation-matrix definition.
+
+---
+
+## Phase 7 — MATLAB/Simulink port
+
+**Q1. How did you validate the Simulink model against the Python implementation, and what error do you get?**
+Same inputs, same integrator (RK4, 10 ms), Python run without quaternion renormalisation. Three levels: (1) the plain MATLAB functions vs Python derivatives at 200 random states (8.5e-14);
+(2) trim/linearisation/gains designed with core MATLAB vs Python (1e-16 to 1e-9); (3) full Simulink time histories, open loop (doublets, saturation, wind, gusts) and closed loop (170 s mission),
+max state error 1e-12 = round-off. Autopilot commands and the zone sequence are identical.
+
+**Q2. Why can two different languages agree to 1e-12 over 17 000 steps of a closed-loop simulation?**
+It is the same algorithm in the same precision; the closed loop is stable so errors do not amplify, and discrete decisions (zone switches) happen at the same sample. If they were not bit-for-bit
+the same decisions, a tiny difference near a switching threshold could produce a large difference, so identical zone sequences are part of the check.
+
+**Q3. What timing subtleties come up when mixing a continuous plant and a discrete controller in Simulink?**
+The ZOH semantics: Simulink's RK4 evaluates the derivative at 4 stages; discrete blocks update only at major steps, so inputs are constant across the stages, as in the Python loop.
+The controller must read the state through a ZOH at its sample time. From Workspace blocks must be discrete, and their time stamps must not suffer from floating-point round-off in the lookup.
+
+**Q4. Why keep the equations in .m files and call them from MATLAB Function blocks rather than build everything from blocks?**
+Single source of truth: the same code runs in plain MATLAB (unit tests, trim, linearisation), is diffable, and is code-generation compatible. The Simulink model carries the *architecture*
+(actuators → air data → forces → rigid body → integrator) and the sample times; this also makes SIL (compile the controller to C) straightforward.
+
+**Q5. How would you take this to SIL and HIL?**
+SIL: generate C from `uav_autopilot` (Embedded Coder) and run it in the same loop, comparing against MIL with the same harness. HIL: plant on a real-time target, fixed-step solver, add sensor models and
+real I/O (servo PWM, serial/CAN), check execution time inside the 10 ms frame, replay the same logged scenarios. Requirements already met: fixed step, no algebraic loops, explicit sample times.
+
+**Q6. Why are the numbers 6.5e-4 vs Python-with-renormalisation not a model mismatch?**
+Simulink integrates the quaternion without renormalising; ‖e‖ drifts by 1e-7 over 170 s and slightly changes the rotation matrix, which grows in the gust case (sensitive trajectory).
+Switching renormalisation off in Python reproduces Simulink to 1e-12, proving the equations are the same.
