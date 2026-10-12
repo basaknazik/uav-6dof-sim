@@ -48,7 +48,13 @@ def fig_turn():
                               post_step=dyn.normalize_quat_state)
     fig, ax = plt.subplots(figsize=(4.5, 4.5))
     th = np.linspace(0, 2 * np.pi, 400)
-    ax.plot(u / r * np.sin(th), u / r * (1 - np.cos(th)), "k--", label=f"analytic circle R=u/r={u / r:.0f} m")
+    # Heading North at t=0, turning right: North = R sin(rt), East = R (1 - cos(rt)); plot x=East, y=North.
+    R = u / r
+    east_exact, north_exact = R * (1 - np.cos(r * t)), R * np.sin(r * t)
+    err = np.hypot(X[:, 1] - east_exact, X[:, 0] - north_exact).max()
+    if err > 1e-5:  # plot-script guard: analytic circle and RK4 path must overlap
+        raise AssertionError(f"turn plot: RK4 path and analytic circle differ by {err:.3e} m")
+    ax.plot(R * (1 - np.cos(th)), R * np.sin(th), "k--", label=f"analytic circle R=u/r={R:.0f} m, centre (E={R:.0f}, N=0)")
     ax.plot(X[:, 1], X[:, 0], label="RK4 trajectory", lw=1)
     ax.set(xlabel="East [m]", ylabel="North [m]", title="Steady turn: f = m(ω×v)"); ax.axis("equal")
     ax.legend(fontsize=7); fig.tight_layout(); fig.savefig(OUT / "phase1_turn.png", dpi=130); plt.close(fig)
