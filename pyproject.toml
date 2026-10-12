@@ -1,0 +1,11 @@
+[project]
+name = "uav-6dof-sim"
+version = "0.0.0"
+description = "6-DOF fixed-wing UAV simulation and autopilot (Aerosonde, Beard & McLain notation)"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+# Repo root on sys.path so tests can `import sim` and `import params`.
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-ra"

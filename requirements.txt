@@ -1,0 +1,5 @@
+# Versions pinned to what the reference implementation was developed/tested with.
+numpy==2.5.4
+scipy==1.18.1
+matplotlib==3.11.2
+pytest==9.1.1
